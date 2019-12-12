@@ -20,7 +20,7 @@ private:
 
 	GrassBlock() {}
 
-	Texture2D* texture = new Texture2D( "res/textures/grass_side.png",
+	Texture3D* texture = new Texture3D( "res/textures/grass_side.png",
 										"res/textures/grass_top_new.png",
 										"res/textures/dirt.png");
 };

@@ -20,5 +20,5 @@ private:
 
 	DirtBlock() {}
 
-	Texture2D* texture = new Texture2D("res/textures/dirt.png");
+	Texture3D* texture = new Texture3D("res/textures/dirt.png");
 };

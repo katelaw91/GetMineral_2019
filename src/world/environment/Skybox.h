@@ -105,7 +105,7 @@ private:
 
 	//ShaderProgram* shader;
 
-	Texture2D* texture = new Texture2D( "res/textures/skybox_front.png",
+	Texture3D* texture = new Texture3D( "res/textures/skybox_front.png",
 										"res/textures/skybox_back.png",
 										"res/textures/skybox_right.png",
 										"res/textures/skybox_left.png",

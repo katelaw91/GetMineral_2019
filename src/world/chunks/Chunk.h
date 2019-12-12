@@ -36,6 +36,12 @@ public:
 		pos.y %= 16;
 		pos.z %= 16;
 
+		if (chunkPos.x > 0 && chunkPos.y > 0 && chunkPos.z > 0) {
+			return blocks[pos.x < 0 ? pos.x * -1 : pos.x]
+						 [pos.y < 0 ? pos.y * -1 : pos.y]
+						 [pos.z < 0 ? pos.z * -1 : pos.z];
+		}
+		else
 		if (chunkPos.x < 0 && chunkPos.y < 0 && chunkPos.z < 0) {
 			return blocks[pos.x < 0 ? 16 - pos.x * -1 : 16 - pos.x]
 						 [pos.y < 0 ? 16 - pos.y * -1 : 16 - pos.y]
@@ -44,8 +50,8 @@ public:
 		else
 		if (chunkPos.x < 0 && chunkPos.y < 0) {
 			return blocks[pos.x < 0 ? 16 - pos.x * -1 : 16 - pos.x]
-							[pos.y < 0 ? 16 - pos.y * -1 : 16 - pos.y]
-							[pos.z < 0 ? pos.z * -1 : pos.z];
+						 [pos.y < 0 ? 16 - pos.y * -1 : 16 - pos.y]
+						 [pos.z < 0 ? pos.z * -1 : pos.z];
 		}
 		else
 		if (chunkPos.x < 0 && chunkPos.z < 0) {
@@ -89,6 +95,12 @@ public:
 		pos.y %= 16;
 		pos.z %= 16;
 
+		if (chunkPos.x > 0 && chunkPos.y > 0 && chunkPos.z > 0) {
+			blocks[pos.x < 0 ? pos.x * -1 : pos.x]
+				  [pos.y < 0 ? pos.y * -1 : pos.y]
+				  [pos.z < 0 ? pos.z * -1 : pos.z] = block;
+		}
+		else
 		if (chunkPos.x < 0 && chunkPos.y < 0 && chunkPos.z < 0) {
 			blocks[pos.x < 0 ? 16 - pos.x * -1 : 16 - pos.x]
 				  [pos.y < 0 ? 16 - pos.y * -1 : 16 - pos.y]
@@ -200,7 +212,27 @@ private:
 			for (int i = 0; i < 16; i++) {
 				for (int j = 0; j < 16; j++) {
 					for (int k = 0; k < 16; k++) {
-						blocks[i][j][k] = 2;
+						//change here for every chunk beside y = 0
+						//to generate a single chunk uncommment line 130 in World.h
+						//comment out generateSurrounding(pc.chunks, pc.chunkPos, pc.player->getRenderDistance()); in World.h on line 131
+						//also comment out pruneChunks(pc.chunks, pc.chunkPos, pc.moving, pc.player->getRenderDistance()); on line 187
+
+						if ((i % 4 == 0 && j > 12) || j <= 12) {
+							blocks[i][j][k] = 2;
+						}
+						else
+							if ((i % 4 == 1 || i % 4 == 3) && j <= 14) {
+								blocks[i][j][k] = 1;
+							}
+							else
+								if (i % 4 == 2 && j <= 13) {
+									blocks[i][j][k] = 1;
+								}
+								else
+									blocks[i][j][k] = 0;
+
+						if (j == 15 && blocks[i][j][k] == 2)
+							blocks[i][j][k] = 1;
 					}
 				}
 			}

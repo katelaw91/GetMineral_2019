@@ -84,12 +84,12 @@ bool Texture3D::loadTexture(bool generateMipMaps)
 	for (int i = 0; i < 6; i++) {
 
 		data = stbi_load(texture[i].c_str(), &width, &height, &components, STBI_rgb_alpha);
-			glTexImage3D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	}
 
 	if (generateMipMaps)
 		glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
-	
+
 	stbi_image_free(data); //free memory
 	glBindTexture(GL_TEXTURE_CUBE_MAP, 0); //unbind texture
 

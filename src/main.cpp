@@ -27,8 +27,10 @@ float MOVE_SPEED = 15.0;
 const float MOUSE_SENSITIVITY = 0.25f;
 const int CHUNK_SIZE = 16;
 
-World* world = World::getInstance();
+//World* world = World::getInstance();
 FPSCamera fpsCam(glm::vec3(0.0f, 2.25f, 5.0f));
+World* world = World::getInstance();
+
 
 void glfw_onKey(GLFWwindow* window, int key, int scancode, int action, int mode);
 void glfw_onFrameBufferSiz(GLFWwindow *window, int width, int height);
@@ -44,6 +46,8 @@ int main()
 		cerr << "GLFW initialization failed." << endl;
 		return -1;
 	}
+
+	//world->addPlayer("TestPlayer", &fpsCam, gWinWidth, gWinHeight, pWindow);
 
 	GLuint vbo;
 	glGenBuffers(1, &vbo);
@@ -73,8 +77,9 @@ int main()
 	glDepthMask(GL_TRUE);
 
 
-	Player* player = new Player("TestPlayer", &fpsCam, gWinWidth, gWinHeight, pWindow);
-	player->setCreative(true);
+	Player* player = new Player("TestPlayer", &fpsCam, true, gWinWidth, gWinHeight, pWindow);
+	world->addPlayer(player);
+	//player->setCreative(true);
 
 
 	double lastTime = glfwGetTime();
@@ -95,10 +100,10 @@ int main()
 
 
 
-		player->update(deltaTime);
+		//player->update(deltaTime);
 
-		cout << player->getPos().x << " " << player->getPos().y << " " << player->getPos().z << endl;
-		cout << (int)world->getBlock(player->getLookAt(), player->getLook())->getIdFromBlock() << endl;
+		//cout << player->getPos().x << " " << player->getPos().y << " " << player->getPos().z << endl;
+		//cout << (int)world->getBlock(player->getLookAt(), player->getLook())->getIdFromBlock() << endl;
 
 		/*
 		glm::vec3 look = player->getLookAt();
@@ -138,6 +143,8 @@ int main()
 		//cout << "======================================" << endl;
 		//cout << (int)world->getBlock(player->getLookAt())->getIdFromBlock() << endl;
 
+
+		world->update(player->getName(), deltaTime);
 		
 		//skybox
 		skybox.use();
@@ -148,14 +155,13 @@ int main()
 		Skybox::getInstance()->bindTexture();
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		
-		
 		//chunks
 		shader.use();
 		pvm = glm::perspective(glm::radians(fpsCam.getFOV()), (float)gWinWidth / (float)gWinHeight, 0.1f, 100.0f);
 		pvm *= fpsCam.getViewMatrix();
 		shader.setUniform("pvm", pvm);
 
-		world->render(shader);
+		world->render(player->getName(), shader);
 
 
 		/*

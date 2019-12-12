@@ -1,16 +1,20 @@
 #pragma once
 
 #include <time.h>
+#include <string>
 
-//#include <world/World.h>
+#include <world/World.h>
 
 class Player {
 public:
-	Player(string name, FPSCamera* cam, int winHeight, int winWidth, GLFWwindow* window)
-		:name(name), cam(cam), creativeMode(false), winHeight(winHeight), winWidth(winWidth), window(window), sensitivity(0.25f),
-		pos(0, 0, 0), jumpTime(clock() / (CLOCKS_PER_SEC / 1000)), isJumping(false)
+	//Player() {}
+
+	Player(string name, FPSCamera* cam, bool creative, int winHeight, int winWidth, GLFWwindow* window, unsigned short renderDistance = 1)
+		:name(name), cam(cam), renderDistance(renderDistance), creativeMode(creative), winHeight(winHeight), winWidth(winWidth), window(window), sensitivity(0.25f),
+		camPos(cam->getPos()), jumpTime(clock() / (CLOCKS_PER_SEC / 1000)), isJumping(false)
 	{
-		world = World::getInstance();
+		//this->world = world;
+		//world = World::getInstance();
 	}
 
 	/*
@@ -19,12 +23,16 @@ public:
 	}
 	*/
 
-	void updatePos(glm::vec3 pos) {
-		this->pos = pos;
+	void updatePos(glm::vec3 camPos) {
+		this->camPos = camPos;
 	}
 
 	glm::vec3 getPos() {
 		return pos;
+	}
+
+	glm::vec3 getCamPos() {
+		return camPos;
 	}
 
 	string getName() {
@@ -39,13 +47,19 @@ public:
 		return cam->getTargetPos();
 	}
 
+	unsigned short& getRenderDistance() {
+		return renderDistance;
+	}
+
 	void setCreative(bool creative) {
 		creativeMode = creative;
 	}
 	
-	void update(double elapsedTime) {
+	bool update(double elapsedTime) {
 
-		pos = cam->getPos();
+		camPos = cam->getPos();
+		pos = camPos;
+		pos.y -= 2.25f;
 		look = cam->getLook();
 		move = cam->getLook();
 		move.y = 0;
@@ -63,6 +77,10 @@ public:
 				cam->move(move_speed * (float)elapsedTime * glm::vec3(0, -1, 0));
 		}
 		else {
+			//if ()
+
+
+
 			if (!isJumping) {
 				if (jumpTime + 175 <= clock() / (CLOCKS_PER_SEC / 1000) && glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
 					cam->move(glm::vec3(0, 1, 0));
@@ -98,23 +116,26 @@ public:
 			cam->move(move_speed * (float)elapsedTime * cam->getRight());
 
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-			world->breakBlock(getLookAt(), getLook());
+			return true;
+			//world->breakBlock(name, getLookAt(), getLook());
 
-		world->update(pos);
+		return false;
 	}
-
-	//subcriber pattern
+	//subcriber pattern / command and observer
 	//on click event
+
+
 
 private:
 
-	string name;
+	std::string name;
 
-	World* world;
+	//World* world = World::getInstance();
 	FPSCamera* cam;
 	GLFWwindow* window;
 
 	glm::vec3 pos;
+	glm::vec3 camPos;
 	glm::vec3 look;
 	glm::vec3 move;
 
@@ -122,6 +143,7 @@ private:
 	unsigned char holding = 0;
 
 	bool creativeMode;
+	unsigned short renderDistance;
 	float sensitivity;
 	int winHeight, winWidth;
 	double mouseX, mouseY;
