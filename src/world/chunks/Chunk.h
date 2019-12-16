@@ -6,8 +6,13 @@
 #include "world/blocks/GrassBlock.h"
 #include "world/blocks/DirtBlock.h"
 #include "world/blocks/AirBlock.h"
+//#include "world/chunks/SimplexNoise.h"
+//#include "world/chunks/PerlinNoise.h"
+#include "Terrain.h"
 
 #include "util/shaders/shaderProgram.h"
+
+using namespace std;
 
 class Chunk {
 public:
@@ -194,28 +199,102 @@ private:
 	unsigned char blocks[16][16][16] = { 0 };
 
 	void generateChunk() {
-		if (chunkPos.y == 0) {
-			for (int i = 0; i < 16; i++) {
-				for (int k = 0; k < 16; k++) {
+		unsigned noiseValues[16][16];
+		float offset = .2;
+		float perlinValue;
+		int maxHeight = 16;
+		int ry, rx, rz;
+		Perlin p;
 
-					blocks[i][0][k] = 1;
+
+		if (chunkPos.y == 0) {
+			for (int x = 0; x < 16; x++) {
+				int n = (p.fPerlinNoise1D[x] * (float)16);
+				//rx = rand() % 16;
+				for (int y = 0; y < 16; y++) {
+					//ry = rand() % 16;
+					for (int z = 0; z < 16; z++){
+						//rz = rand() % 16;
+						//octave_noise_3d(3.0, 0.5, 1, x, y, z) >> endl;
+						blocks[x][n][z] = 1;
+						int temp = n - 1;
+						while (temp > 0) {
+							blocks[x][temp][z] = 2;
+							temp--;
+
+						}
+
+						/*if (ry > 12) {
+							blocks[rx][ry][rz] = 1;
+						}
+						else {
+							blocks[rx][ry][rz] = 2;
+							blocks[x][0][z] = 1;
+						}*/
+						//n = n + offset;
+						//perlin = (int)n % 16;
+						//blocks[x][y][z] = 1;
+					}
 				}
 			}
+
+
+	
+
+			
 
 			if (chunkPos == glm::ivec3(0, 0, 0)) {
 				blocks[0][1][0] = 2;
 				blocks[0][2][0] = 2;
 				blocks[0][3][0] = 2;
+				blocks[2][1][0] = 2;
+				blocks[2][2][0] = 2;
+				blocks[2][3][0] = 2;
+				blocks[2][4][0] = 2;
+
+				
+				/*for (int i = 0; i < 16; i++) {
+					n = n + offset;
+					int rx = (int)n % 16;
+					//int rx = rand() % 10;
+
+					for (int j = 0; j < 16; j++) {
+						n = n + offset;
+						int ry = (int)n % 16 ;
+						//int ry = rand() % 10;
+
+						for (int k = 0; k < 16; k++) {
+							n = n + offset;
+							int rz = (int)n % 16;
+							//int rz = rand() % 10;
+							
+							if(blocks[rx][ry + 1][rz] == 2)
+							{
+								blocks[rx][ry][rz] == 1;
+							}
+							else {
+								blocks[rx][ry][rz] = 2;
+							}
+						}
+					}
+				}*/
+
+
 			}
 		}
-		else {
+		
+		/*else {
+		
 			for (int i = 0; i < 16; i++) {
 				for (int j = 0; j < 16; j++) {
 					for (int k = 0; k < 16; k++) {
-						//change here for every chunk beside y = 0
-						//to generate a single chunk uncommment line 130 in World.h
-						//comment out generateSurrounding(pc.chunks, pc.chunkPos, pc.player->getRenderDistance()); in World.h on line 131
-						//also comment out pruneChunks(pc.chunks, pc.chunkPos, pc.moving, pc.player->getRenderDistance()); on line 187
+						
+						//blocks[i][j][k] = 2;
+
+					//change here for every chunk beside y = 0
+					//to generate a single chunk uncommment line 130 in World.h
+					//comment out generateSurrounding(pc.chunks, pc.chunkPos, pc.player->getRenderDistance()); in World.h on line 131
+					//also comment out pruneChunks(pc.chunks, pc.chunkPos, pc.moving, pc.player->getRenderDistance()); on line 187
 
 						if ((i % 4 == 0 && j > 12) || j <= 12) {
 							blocks[i][j][k] = 2;
@@ -236,6 +315,6 @@ private:
 					}
 				}
 			}
-		}
+		}*/
 	}
 };
