@@ -56,32 +56,34 @@ public:
 	glm::ivec3 getChunkFromPos(const glm::vec3 &pos) {
 		glm::ivec3 temp_chunkPos;
 
-		int temp = pos.x / 16;
-		if (pos.x < 0)
-			temp--;
-		temp_chunkPos.x = temp * 16;	
+		temp_chunkPos.x = floor(pos.x / 16);
+		temp_chunkPos.x *= 16;	
 
-		temp = pos.y / 16;
-		if (pos.y < 0)
-			temp--;
-		temp_chunkPos.y = temp * 16;
+		temp_chunkPos.y = floor(pos.y / 16);
+		temp_chunkPos.y *= 16;
 
-		temp = pos.z / 16;
-		if (pos.z < 0)
-			temp--;
-		temp_chunkPos.z = temp * 16;
+		temp_chunkPos.z = floor(pos.z / 16);
+		temp_chunkPos.z *= 16;
 
 		return temp_chunkPos;
 	}
+
+	/*
+	unsigned char getBlockFromPos(const string& username) {
+		PlayerChunks pc = players[username];
+
+		return pc.chunks[ivec3_hash(pc.chunkPos)]->getBlock(pc.playerPos);
+	}
+	*/
 
 	Block* getBlock(const string &username, const glm::vec3 &lookAt, const glm::vec3 &look) {
 		glm::ivec3 targetPos;
 		
 		for (float i = 1; i <= 3.0; i += 0.25) {
 			
-			targetPos.x = lookAt.x + look.x * i;
-			targetPos.y = lookAt.y + look.y * i;
-			targetPos.z = lookAt.z + look.z * i;
+			targetPos.x = floor(lookAt.x + look.x * i);
+			targetPos.y = floor(lookAt.y + look.y * i);
+			targetPos.z = floor(lookAt.z + look.z * i);
 
 			//cout << "chunk pos" << endl;
 			//cout << getChunkFromPos(targetPos).x << " " << getChunkFromPos(targetPos).y << " " << getChunkFromPos(targetPos).z << endl;
@@ -104,9 +106,9 @@ public:
 
 		for (float i = 1; i <= 3.0; i += 0.25) {
 
-			targetPos.x = lookAt.x + look.x * i;
-			targetPos.y = lookAt.y + look.y * i;
-			targetPos.z = lookAt.z + look.z * i;
+			targetPos.x = floor(lookAt.x + look.x * i);
+			targetPos.y = floor(lookAt.y + look.y * i);
+			targetPos.z = floor(lookAt.z + look.z * i);
 
 			if (chunks[ivec3_hash(getChunkFromPos(targetPos))]->getBlock(targetPos) == 0)
 			{
@@ -127,8 +129,10 @@ public:
 		pc.player = player;
 		pc.moving = Direction::ORIGIN;
 		update(pc, 0);
-		//pc.chunks[ivec3_hash(glm::ivec3(0, -16, 0))] = new Chunk(glm::ivec3(0, -16, 0));
 		generateSurrounding(pc.chunks, pc.chunkPos, pc.player->getRenderDistance());
+		generateSurrounding(pc.chunks, pc.chunkPos, pc.player->getRenderDistance(), -16, 0);
+
+		pc.chunks[ivec3_hash(glm::ivec3(0, -16, 0))] = new Chunk(glm::ivec3(0, -16, 0));
 
 		players[player->getName()] = pc;
 	}
@@ -142,41 +146,20 @@ public:
 
 private:
 
-	/*
-	enum Direction {
-		NORTH,
-		EAST,
-		SOUTH,
-		WEST,
-		UP,
-		DOWN
-	};
-	*/
-
 	struct PlayerChunks {
 		Player* player;
 		unordered_map<int, Chunk*> chunks;
 		Direction moving;
 		glm::ivec3 chunkPos;
 		glm::vec3 playerPos;
-		//unsigned short renderDist;
 	};
 
 	unordered_map<string, PlayerChunks> players;
 
-	//unordered_map<string, Player*> players;
-
-	//Player* player;
-	//glm::vec3 playerPos;
-	//glm::ivec3 chunkPos;
-
-	//unsigned short renderDistance;
-
-
 	World() {}
 
 	void update(PlayerChunks &pc, const double & et) {
-		if (pc.player->update(et)) {
+		if (pc.player->update(et, pc.chunks[ivec3_hash(pc.chunkPos)] == NULL ? 1 : getBlockFromPos(pc))) { //floor: negs round to 0
 			breakBlock(pc.chunks, pc.player->getLookAt(), pc.player->getLook());
 		}
 
@@ -187,39 +170,16 @@ private:
 				pruneChunks(pc.chunks, pc.chunkPos, pc.moving, pc.player->getRenderDistance());
 			}
 		}
+
+		//pc.player->checkBounds(pc.chunks[ivec3_hash(pc.chunkPos)] == NULL ? 1 : getBlockFromPos(pc));
 	}
 
-
-	/*
-	World()
-		:playerPos(0, 0, 0), chunkPos(0, 0, 0)
-	{
-		//players["TestPlayer"] = new Player()
-		generateSurrounding();
-		chunks[ivec3_hash(glm::ivec3(0, -16, 0))] = new Chunk(glm::ivec3(0, -16, 0));
-		//generateSurrounding(-16);
+	unsigned char getBlockFromPos(PlayerChunks &pc) {
+		return pc.chunks[ivec3_hash(pc.chunkPos)]->getBlock(glm::ivec3(floor(pc.playerPos.x), floor(pc.playerPos.y), floor(pc.playerPos.z)));
 	}
-	*/
-
-	/*
-	void generateChunk() {
-		chunks[ivec3_hash(chunkPos)] = new Chunk(chunkPos);
-		std::cout << chunkPos.x << " " << chunkPos.y << " " << chunkPos.z << " = " << ivec3_hash(chunkPos) << std::endl;
-
-		for (auto chunk : chunks)
-			std::cout << chunk.first << endl;
-
-		cout << "================================================" << endl;
-	}
-	*/
-
-
 
 	bool getChunkFromPos(glm::vec3 playerPos, glm::ivec3 &chunkPos, Direction &moving) {
-		int temp = playerPos.x / 16;
-
-		if (playerPos.x < 0)
-			temp--;
+		int temp = floor(playerPos.x / 16);
 		temp *= 16;
 		if (temp != chunkPos.x) {
 			if (temp > chunkPos.x)
@@ -230,9 +190,7 @@ private:
 			return true;
 		}
 
-		temp = playerPos.y / 16;
-		if (playerPos.y < 0)
-			temp--;
+		temp = floor(playerPos.y / 16);
 		temp *= 16;
 		if (temp != chunkPos.y) {
 			if (temp > chunkPos.y)
@@ -243,9 +201,7 @@ private:
 			return true;
 		}
 
-		temp = playerPos.z / 16;
-		if (playerPos.z < 0)
-			temp--;
+		temp = floor(playerPos.z / 16);
 		temp *= 16;
 		if (temp != chunkPos.z) {
 			if (temp > chunkPos.z)
@@ -289,11 +245,8 @@ private:
 
 		case EAST:
 			for (short i = renderDistance * -1; i <= renderDistance; i++) {
-
-				//erase chunks past render distance
 				chunks.erase(ivec3_hash(glm::ivec3(i * 16 + chunkPos.x, level, chunkPos.z - 16 * (renderDistance + 1))));
 
-				//add chunks at render distance
 				chunks[ivec3_hash(glm::ivec3(i * 16 + chunkPos.x, level, chunkPos.z + renderDistance * 16))]
 					= new Chunk(glm::ivec3(i * 16 + chunkPos.x, level, chunkPos.z + renderDistance * 16));
 			}
@@ -301,11 +254,8 @@ private:
 
 		case SOUTH:
 			for (short i = renderDistance * -1; i <= renderDistance; i++) {
-
-				//erase chunks past render distance
 				chunks.erase(ivec3_hash(glm::ivec3(chunkPos.x + 16 * (renderDistance + 1), level, i * 16 + chunkPos.z)));
 
-				//add chunks at render distance
 				chunks[ivec3_hash(glm::ivec3(chunkPos.x - renderDistance * 16, level, i * 16 + chunkPos.z))]
 					= new Chunk(glm::ivec3(chunkPos.x - renderDistance * 16, level, i * 16 + chunkPos.z));
 			}
@@ -313,11 +263,8 @@ private:
 
 		case WEST:
 			for (short i = renderDistance * -1; i <= renderDistance; i++) {
-
-				//erase chunks past render distance
 				chunks.erase(ivec3_hash(glm::ivec3(i * 16 + chunkPos.x, level, chunkPos.z + 16 * (renderDistance + 1))));
 
-				//add chunks at render distance
 				chunks[ivec3_hash(glm::ivec3(i * 16 + chunkPos.x, level, chunkPos.z - renderDistance * 16))]
 					= new Chunk(glm::ivec3(i * 16 + chunkPos.x, level, chunkPos.z - renderDistance * 16));
 			}
@@ -325,11 +272,11 @@ private:
 		}
 	}
 
-	void generateSurrounding(unordered_map<int, Chunk*> &chunks, const glm::ivec3 &chunkPos, const unsigned short &renderDistance, int level = 0) {
+	void generateSurrounding(unordered_map<int, Chunk*> &chunks, const glm::ivec3 &chunkPos, const unsigned short &renderDistance, int level = 0, int genType = -1) {
 		for (short i = renderDistance * -1; i <= renderDistance; i++) {
 			for (short j = renderDistance * -1; j <= renderDistance; j++) {
 				chunks[ivec3_hash(glm::ivec3(i * 16 + chunkPos.x, level, j * 16 + chunkPos.z))]
-					  = new Chunk(glm::ivec3(i * 16 + chunkPos.x, level, j * 16 + chunkPos.z));
+					  = new Chunk(glm::ivec3(i * 16 + chunkPos.x, level, j * 16 + chunkPos.z), genType);
 			}
 		}
 	}

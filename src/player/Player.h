@@ -11,7 +11,7 @@ public:
 
 	Player(string name, FPSCamera* cam, bool creative, int winHeight, int winWidth, GLFWwindow* window, unsigned short renderDistance = 1)
 		:name(name), cam(cam), renderDistance(renderDistance), creativeMode(creative), winHeight(winHeight), winWidth(winWidth), window(window), sensitivity(0.25f),
-		camPos(cam->getPos()), jumpTime(clock() / (CLOCKS_PER_SEC / 1000)), isJumping(false)
+		camPos(cam->getPos()), jumpTime(clock() / (CLOCKS_PER_SEC / 1000)), isJumping(false)//, isFalling(false)
 	{
 		//this->world = world;
 		//world = World::getInstance();
@@ -55,7 +55,7 @@ public:
 		creativeMode = creative;
 	}
 	
-	bool update(double elapsedTime) {
+	bool update(double elapsedTime, unsigned int isFalling) {
 
 		camPos = cam->getPos();
 		pos = camPos;
@@ -77,24 +77,12 @@ public:
 				cam->move(move_speed * (float)elapsedTime * glm::vec3(0, -1, 0));
 		}
 		else {
-			//if ()
-
-
-
-			if (!isJumping) {
-				if (jumpTime + 175 <= clock() / (CLOCKS_PER_SEC / 1000) && glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-					cam->move(glm::vec3(0, 1, 0));
-					isJumping = true;
-					jumpTime = clock() / (CLOCKS_PER_SEC / 1000);
-				}
+			if (isFalling || isJumping) {
+				if (isJumping || glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+					jump();
 			}
-			else {
-				if (jumpTime + 175 <= clock() / (CLOCKS_PER_SEC / 1000)) {
-					cam->move(glm::vec3(0, -1, 0));
-					isJumping = false;
-					jumpTime = clock() / (CLOCKS_PER_SEC / 1000);
-				}
-			}
+			else
+				cam->move(glm::vec3(0, -0.25, 0));
 		}
 
 		if (glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS)
@@ -121,12 +109,42 @@ public:
 
 		return false;
 	}
+
+	bool checkBounds(glm::vec3 movePos) {
+		//if (camPos)
+	}
+
 	//subcriber pattern / command and observer
 	//on click event
 
 
 
 private:
+
+	void jump() {
+		if (!isJumping) {
+			if (jumpTime + 575 <= clock() / (CLOCKS_PER_SEC / 1000)) {
+				jumpSpeed = 0;
+				jumpTime = clock() / (CLOCKS_PER_SEC / 1000);
+				isJumping = true;
+			}
+		}
+		else {
+			if (jumpSpeed < 7) {
+
+				//if (jumpTime + abs(28.75 * jumpSpeed) <= clock() / (CLOCKS_PER_SEC / 1000)) {
+					cam->move(glm::vec3(0, ++jumpSpeed > 0 ? 0.17857142857 : -0.17857142857, 0));
+				//}
+				
+				if (jumpSpeed == 0) {
+					isJumping = false;			
+				}
+			}
+			else {
+				jumpSpeed = -7;
+			}
+		}
+	}
 
 	std::string name;
 
@@ -148,6 +166,8 @@ private:
 	int winHeight, winWidth;
 	double mouseX, mouseY;
 	bool isJumping;
+	//bool isFalling;
 	clock_t jumpTime;
+	short jumpSpeed = 0;
 	int move_speed = 10;
 };

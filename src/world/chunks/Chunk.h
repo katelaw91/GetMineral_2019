@@ -6,19 +6,8 @@
 #include "world/blocks/GrassBlock.h"
 #include "world/blocks/DirtBlock.h"
 #include "world/blocks/AirBlock.h"
-#include "world/blocks/BarkBlock.h"
-#include "world/blocks/LeafBlock.h"
-#include "world/chunks/simplexnoise.h"
-//#include "world/chunks/PerlinNoise.h"
-#include "Terrain.h"
 
 #include "util/shaders/shaderProgram.h"
-#include <noise/noise.h>
-#include "noiseutils.h"
-#include <stdlib.h>
-#include <time.h>
-
-//using namespace noise;
 
 class Chunk {
 public:
@@ -30,6 +19,13 @@ public:
 		generateChunk();
 	}
 
+	Chunk(glm::ivec3 pos, int chunkGenType)
+		:chunkPos(pos)
+	{
+		mat_chunkPos = glm::translate(glm::mat4(1), glm::vec3(chunkPos));
+		generateChunk(chunkGenType);
+	}
+
 	static Block* getBlock(unsigned char id) {
 		switch (id) {
 		default:
@@ -39,10 +35,6 @@ public:
 			return GrassBlock::getInstance();
 		case 2:
 			return DirtBlock::getInstance();
-		case 3:
-			return BarkBlock::getInstance();
-		case 4:
-			return LeafBlock::getInstance();
 		}
 	}
 
@@ -175,7 +167,7 @@ public:
 							  [ pos.z < 0 ? pos.z * -1 : pos.z ]);
 	}
 	*/
-
+ 
 	glm::ivec3 getChunkPos() {
 		return chunkPos;
 	}
@@ -208,261 +200,98 @@ private:
 
 	unsigned char blocks[16][16][16] = { 0 };
 
-
-	void generateChunk() {
-		unsigned noiseValues[16][16];
-		float offset = .2;
-		float perlinValue;
-		int maxHeight = 16;
-		int ry, rx, rz;
-		Perlin p;
-
-
-		if (chunkPos.y == 0) {
-			for (int x = 0; x < 16; x++) {
-
-
-				int n = (p.fPerlinNoise1D[x] * (float)16);
-
-				//rx = rand() % 16;
-				for (int y = 0; y < 16; y++) {
-					//ry = rand() % 16;
-
-					for (int z = 0; z < 16; z++){
-						blocks[x][0][z] = 1;
-						//blocks[coord][coord][z] = 1;
-						//rz = rand() % 16;
-						//octave_noise_3d(3.0, 0.5, 1, x, y, z) >> endl;
-						blocks[x][n][z] = 1;
-						if (rand() % 16 == x && rand() % 16 == z && blocks[x][n][z] == 1 && blocks[x-1][n][z] != 2 && blocks[x][n][z-1] != 2 && blocks[x + 1][n][z] != 2 && blocks[x][n][z + 1] != 2 && n < 13 && rand() % 10 == 4 && (x > 2 && x < 14)) {
-							
-							genTree(x, n);
-						}
-
-						if (rand() % 16 == x && rand() % 16 == z && blocks[x][n][z] == 1 && blocks[x - 1][n][z] != 2 && blocks[x][n][z - 1] != 2 && blocks[x + 1][n][z] != 2 && blocks[x][n][z + 1] != 2 && n < 11 && rand() % 10 == 8 && (x > 2 && x < 14)) {
-							genBigTree(x, n);
-						}
-						int temp = n - 1;
-						while (temp > 0) {
-							blocks[x][temp][z] = 2;
-							temp--;
-
-						}
-
-						//add balls lol
-						if (n > 12) {
-							if (sqrt((float)(x - 16 / 2)*(x - 16 / 2) + (y - 16 / 2)*(y - 16 / 2) + (z - 16 / 2)*(z - 16 / 2)) <= 16 / 2)
-							{
-								blocks[x][y][z] = 1;
-							}
-						}
-
-	
-						
-						/*if (ry > 12) {
-							blocks[rx][ry][rz] = 1;
-						}
-						else {
-							blocks[rx][ry][rz] = 2;
-							blocks[x][0][z] = 1;
-						}*/
-						//n = n + offset;
-						//perlin = (int)n % 16;
-						//blocks[x][y][z] = 1;
-					}
-				}
-			}
-
-			//make tree
-			if (chunkPos == glm::ivec3(0, 0, 0)) {
-			}
-
-				
-				/*for (int i = 0; i < 16; i++) {
-					n = n + offset;
-					int rx = (int)n % 16;
-					//int rx = rand() % 10;
-
-					for (int j = 0; j < 16; j++) {
-						n = n + offset;
-						int ry = (int)n % 16 ;
-						//int ry = rand() % 10;
-
-						for (int k = 0; k < 16; k++) {
-							n = n + offset;
-							int rz = (int)n % 16;
-							//int rz = rand() % 10;
-							
-							if(blocks[rx][ry + 1][rz] == 2)
-							{
-								blocks[rx][ry][rz] == 1;
-							}
-							else {
-								blocks[rx][ry][rz] = 2;
-							}
-						}
-					}
-				}*/
-
-
-			
-		}
-		
-		/*else {
-		
+	void generateChunk(int genType = -1) {
+		switch (genType) {
+		case 0:
 			for (int i = 0; i < 16; i++) {
 				for (int j = 0; j < 16; j++) {
 					for (int k = 0; k < 16; k++) {
-						
-						//blocks[i][j][k] = 2;
-
-					//change here for every chunk beside y = 0
-					//to generate a single chunk uncommment line 130 in World.h
-					//comment out generateSurrounding(pc.chunks, pc.chunkPos, pc.player->getRenderDistance()); in World.h on line 131
-					//also comment out pruneChunks(pc.chunks, pc.chunkPos, pc.moving, pc.player->getRenderDistance()); on line 187
-
-						if ((i % 4 == 0 && j > 12) || j <= 12) {
-							blocks[i][j][k] = 2;
-						}
-						else
-							if ((i % 4 == 1 || i % 4 == 3) && j <= 14) {
-								blocks[i][j][k] = 1;
-							}
-							else
-								if (i % 4 == 2 && j <= 13) {
-									blocks[i][j][k] = 1;
-								}
-								else
-									blocks[i][j][k] = 0;
-
-						if (j == 15 && blocks[i][j][k] == 2)
-							blocks[i][j][k] = 1;
+						blocks[i][j][k] = 0;
 					}
 				}
 			}
-		}*/
-	}
 
-	void genTree(int r, int y) {
+			return;
 
-		//trunk
-		blocks[r][y][r - 1] = 3;
-		blocks[r][y + 1][r - 1] = 3;
-		blocks[r][y + 2][r - 1] = 3;
+		case 1:
+			for (int i = 0; i < 16; i++) {
+				for (int j = 0; j < 16; j++) {
+					for (int k = 0; k < 16; k++) {
+						blocks[i][j][k] = 1;
+					}
+				}
+			}
 
-		//leaf row 1
-		blocks[r - 1][y + 3][r - 1] = 4;
-		blocks[r][y + 3][r - 1] = 4;
-		blocks[r + 1][y + 3][r - 1] = 4;
-		blocks[r - 1][y + 3][r] = 4;
-		blocks[r][y + 3][r] = 4;
-		blocks[r + 1][y + 3][r] = 4;
-		blocks[r - 1][y + 3][r - 2] = 4;
-		blocks[r][y + 3][r - 2] = 4;
-		blocks[r + 1][y + 3][r - 2] = 4;
+			return;
 
-		//leaf row 2
-		blocks[r - 1][y + 4][r - 1] = 4;
-		blocks[r][y + 4][r - 1] = 4;
-		blocks[r + 1][y + 4][r - 1] = 4;
-		blocks[r - 1][y + 4][r] = 4;
-		blocks[r][y + 4][r] = 4;
-		blocks[r + 1][y + 4][r] = 4;
-		blocks[r - 1][y + 4][r - 2] = 4;
-		blocks[r][y + 4][r - 2] = 4;
-		blocks[r + 1][y + 4][r - 2] = 4;
+		case 2:
+			for (int i = 0; i < 16; i++) {
+				for (int j = 0; j < 16; j++) {
+					for (int k = 0; k < 16; k++) {
+						blocks[i][j][k] = 2;
+					}
+				}
+			}
 
-		blocks[r][y + 5][r - 1] = 4;
-		
-	}
+			return;
 
-	void genBigTree(int r, int y) {
+		default:
+			if (chunkPos == glm::ivec3(0, 0, 0)) {
+				for (int i = 0; i < 16; i++) {
+					for (int j = 0; j < 16; j++) {
+						for (int k = 0; k < 16; k++) {
+							if (j == 0 || (i % 3 == 0 && j == 1))
+								blocks[i][j][k] = 1;
+							else
+								blocks[i][j][k] = 0;
+						}
+					}
+				}
+			}
+			else {
+				if (chunkPos.y == 0) {
+					for (int i = 0; i < 16; i++) {
+						for (int k = 0; k < 16; k++) {
 
-		//trunk
-		blocks[r][y][r - 1] = 3;
-		blocks[r][y + 1][r - 1] = 3;
-		blocks[r][y + 2][r - 1] = 3;
-		blocks[r][y + 3][r - 1] = 3;
-		blocks[r][y + 4][r - 1] = 3;
+							blocks[i][0][k] = 1;
+						}
+					}
+				}
+				else
+				for (int i = 0; i < 16; i++) {
+					for (int j = 0; j < 16; j++) {
+						for (int k = 0; k < 16; k++) {
+							//change here for every chunk beside y = 0
+							//to generate a single chunk uncommment line 130 in World.h
+							//comment out generateSurrounding(pc.chunks, pc.chunkPos, pc.player->getRenderDistance()); in World.h on line 131
+							//also comment out pruneChunks(pc.chunks, pc.chunkPos, pc.moving, pc.player->getRenderDistance()); on line 187
 
-		//leaf row 1
-		blocks[r][y + 3][r] = 4;
-		blocks[r][y + 3][r - 1] = 4;
-		blocks[r][y + 3][r - 2] = 4;
-		blocks[r][y + 3][r + 1] = 4;
-		blocks[r][y + 3][r - 3] = 4;
+							/*
+							if ((i % 4 == 0 && j > 12) || j <= 12) {
+								blocks[i][j][k] = 2;
+							}
+							else
+								if ((i % 4 == 1 || i % 4 == 3) && j <= 14) {
+									blocks[i][j][k] = 1;
+								}
+								else
+									if (i % 4 == 2 && j <= 13) {
+										blocks[i][j][k] = 1;
+									}
+									else
+										blocks[i][j][k] = 0;
 
-
-		blocks[r - 1][y + 3][r] = 4;
-		blocks[r - 1][y + 3][r - 1] = 4;
-		blocks[r - 1][y + 3][r - 2] = 4;
-		blocks[r-1][y + 3][r  + 1] = 4;
-		blocks[r-1][y + 3][r - 3] = 4;
-
-		blocks[r - 2][y + 3][r] = 4;
-		blocks[r - 2][y + 3][r - 1] = 4;
-		blocks[r - 2][y + 3][r - 2] = 4;
-		blocks[r-2][y + 3][r + 1] = 4;
-		blocks[r-2][y + 3][r - 3] = 4;
-
-		blocks[r + 1][y + 3][r] = 4;
-		blocks[r + 1][y + 3][r - 1] = 4;
-		blocks[r + 1][y + 3][r - 2] = 4;
-		blocks[r + 1][y + 3][r + 1] = 4;
-		blocks[r + 1][y + 3][r - 3] = 4;
-
-		blocks[r + 2][y + 3][r] = 4;
-		blocks[r + 2][y + 3][r - 1] = 4;
-		blocks[r + 2][y + 3][r - 2] = 4;
-		blocks[r + 2][y + 3][r + 1] = 4;
-		blocks[r + 2][y + 3][r - 3] = 4;
-
-		//leaf row 1
-		blocks[r][y + 4][r] = 4;
-		blocks[r][y + 4][r - 1] = 4;
-		blocks[r][y + 4][r - 2] = 4;
-		blocks[r][y + 4][r + 1] = 4;
-		blocks[r][y + 4][r - 3] = 4;
-
-
-		blocks[r - 1][y + 4][r] = 4;
-		blocks[r - 1][y + 4][r - 1] = 4;
-		blocks[r - 1][y + 4][r - 2] = 4;
-		blocks[r - 1][y + 4][r + 1] = 4;
-		blocks[r - 1][y + 4][r - 3] = 4;
-
-		blocks[r - 2][y + 4][r] = 4;
-		blocks[r - 2][y + 4][r - 1] = 4;
-		blocks[r - 2][y + 4][r - 2] = 4;
-		blocks[r - 2][y + 4][r + 1] = 4;
-		blocks[r - 2][y + 4][r - 3] = 4;
-
-		blocks[r + 1][y + 4][r] = 4;
-		blocks[r + 1][y + 4][r - 1] = 4;
-		blocks[r + 1][y + 4][r - 2] = 4;
-		blocks[r + 1][y + 4][r + 1] = 4;
-		blocks[r + 1][y + 4][r - 3] = 4;
-
-		blocks[r + 2][y + 4][r] = 4;
-		blocks[r + 2][y + 4][r - 1] = 4;
-		blocks[r + 2][y + 4][r - 2] = 4;
-		blocks[r + 2][y + 4][r + 1] = 4;
-		blocks[r + 2][y + 4][r - 3] = 4;
-
-		//leaf row 3
-		blocks[r - 1][y + 5][r - 1] = 4;
-		blocks[r][y + 5][r - 1] = 4;
-		blocks[r + 1][y + 5][r - 1] = 4;
-		blocks[r - 1][y + 5][r] = 4;
-		blocks[r][y + 5][r] = 4;
-		blocks[r + 1][y + 5][r] = 4;
-		blocks[r - 1][y + 5][r - 2] = 4;
-		blocks[r][y + 5][r - 2] = 4;
-		blocks[r + 1][y + 5][r - 2] = 4;
-
-
-
-		blocks[r][y + 6][r - 1] = 4;
-
+							if (j == 15 && blocks[i][j][k] == 2)
+								blocks[i][j][k] = 1;
+							*/
+							if (i == 0 && j == 0 && k == 0)
+								blocks[i][j][k] = 0;
+							else
+								blocks[i][0][k] = 1;
+						}
+					}
+				}
+			}
+		}
 	}
 };

@@ -15,6 +15,8 @@
 #include "world/environment/Skybox.h"
 #include "player/Player.h"
 
+#include  "world/chunks/newMesh.h"
+
 const char* APP_TITLE = "Get Mineral";
 int gWinWidth = 1920;// 1024;
 int gWinHeight = 1080;// 768;
@@ -77,7 +79,7 @@ int main()
 	glDepthMask(GL_TRUE);
 
 
-	Player* player = new Player("TestPlayer", &fpsCam, true, gWinWidth, gWinHeight, pWindow);
+	Player* player = new Player("TestPlayer", &fpsCam, false, gWinWidth, gWinHeight, pWindow);
 	world->addPlayer(player);
 	//player->setCreative(true);
 
@@ -97,8 +99,8 @@ int main()
 
 		glm::mat4 pvm;
 
-
-
+		//cout << "CamPos: " << player->getCamPos().x << " " << player->getCamPos().y << " " << player->getCamPos().z << endl;
+		//cout << "Pos: " << player->getPos().x << " " << player->getPos().y << " " << player->getPos().z << endl;
 
 		//player->update(deltaTime);
 
@@ -160,6 +162,10 @@ int main()
 		pvm = glm::perspective(glm::radians(fpsCam.getFOV()), (float)gWinWidth / (float)gWinHeight, 0.1f, 100.0f);
 		pvm *= fpsCam.getViewMatrix();
 		shader.setUniform("pvm", pvm);
+
+		
+		//Mesh test({ glm::vec3(0, 0, 0), glm::normalize(glm::vec3(0, 0, 0)), glm::vec2(0, 0) }, );
+
 
 		world->render(player->getName(), shader);
 
