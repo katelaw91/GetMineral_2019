@@ -6,13 +6,19 @@
 #include "world/blocks/GrassBlock.h"
 #include "world/blocks/DirtBlock.h"
 #include "world/blocks/AirBlock.h"
-//#include "world/chunks/SimplexNoise.h"
+#include "world/blocks/BarkBlock.h"
+#include "world/blocks/LeafBlock.h"
+#include "world/chunks/simplexnoise.h"
 //#include "world/chunks/PerlinNoise.h"
 #include "Terrain.h"
 
 #include "util/shaders/shaderProgram.h"
+#include <noise/noise.h>
+#include "noiseutils.h"
+#include <stdlib.h>
+#include <time.h>
 
-using namespace std;
+//using namespace noise;
 
 class Chunk {
 public:
@@ -33,6 +39,10 @@ public:
 			return GrassBlock::getInstance();
 		case 2:
 			return DirtBlock::getInstance();
+		case 3:
+			return BarkBlock::getInstance();
+		case 4:
+			return LeafBlock::getInstance();
 		}
 	}
 
@@ -198,6 +208,7 @@ private:
 
 	unsigned char blocks[16][16][16] = { 0 };
 
+
 	void generateChunk() {
 		unsigned noiseValues[16][16];
 		float offset = .2;
@@ -209,14 +220,24 @@ private:
 
 		if (chunkPos.y == 0) {
 			for (int x = 0; x < 16; x++) {
+
+
 				int n = (p.fPerlinNoise1D[x] * (float)16);
+
 				//rx = rand() % 16;
 				for (int y = 0; y < 16; y++) {
 					//ry = rand() % 16;
+
 					for (int z = 0; z < 16; z++){
+						blocks[x][0][z] = 1;
+						//blocks[coord][coord][z] = 1;
 						//rz = rand() % 16;
 						//octave_noise_3d(3.0, 0.5, 1, x, y, z) >> endl;
 						blocks[x][n][z] = 1;
+						if (rand() % 16 == x && rand() % 16 == z && blocks[x][n][z] == 1 && blocks[x-1][n][z] != 2 && blocks[x][n][z-1] != 2 && blocks[x + 1][n][z] != 2 && blocks[x][n][z + 1] != 2 && n < 13 && rand() % 10 == 4 && (x > 2 && x < 14)) {
+							
+							genTree(x, n);
+						}
 						int temp = n - 1;
 						while (temp > 0) {
 							blocks[x][temp][z] = 2;
@@ -224,6 +245,17 @@ private:
 
 						}
 
+						//add balls lol
+						if (n > 12) {
+							if (sqrt((float)(x - 16 / 2)*(x - 16 / 2) + (y - 16 / 2)*(y - 16 / 2) + (z - 16 / 2)*(z - 16 / 2)) <= 16 / 2)
+							{
+								blocks[x][y][z] = 1;
+							}
+
+						}
+
+	
+						
 						/*if (ry > 12) {
 							blocks[rx][ry][rz] = 1;
 						}
@@ -238,19 +270,12 @@ private:
 				}
 			}
 
-
-	
-
-			
-
+			//make tree
 			if (chunkPos == glm::ivec3(0, 0, 0)) {
-				blocks[0][1][0] = 2;
-				blocks[0][2][0] = 2;
-				blocks[0][3][0] = 2;
-				blocks[2][1][0] = 2;
-				blocks[2][2][0] = 2;
-				blocks[2][3][0] = 2;
-				blocks[2][4][0] = 2;
+
+				int r = 9;
+					
+			}
 
 				
 				/*for (int i = 0; i < 16; i++) {
@@ -280,7 +305,7 @@ private:
 				}*/
 
 
-			}
+			
 		}
 		
 		/*else {
@@ -316,5 +341,37 @@ private:
 				}
 			}
 		}*/
+	}
+
+	void genTree(int r, int y) {
+		//trunk
+		blocks[r][y][r - 1] = 3;
+		blocks[r][y + 1][r - 1] = 3;
+		blocks[r][y + 2][r - 1] = 3;
+
+		//leaf row 1
+		blocks[r - 1][y + 3][r - 1] = 4;
+		blocks[r][y + 3][r - 1] = 4;
+		blocks[r + 1][y + 3][r - 1] = 4;
+		blocks[r - 1][y + 3][r] = 4;
+		blocks[r][y + 3][r] = 4;
+		blocks[r + 1][y + 3][r] = 4;
+		blocks[r - 1][y + 3][r - 2] = 4;
+		blocks[r][y + 3][r - 2] = 4;
+		blocks[r + 1][y + 3][r - 2] = 4;
+
+		//leaf row 2
+		blocks[r - 1][y + 4][r - 1] = 4;
+		blocks[r][y + 4][r - 1] = 4;
+		blocks[r + 1][y + 4][r - 1] = 4;
+		blocks[r - 1][y + 4][r] = 4;
+		blocks[r][y + 4][r] = 4;
+		blocks[r + 1][y + 4][r] = 4;
+		blocks[r - 1][y + 4][r - 2] = 4;
+		blocks[r][y + 4][r - 2] = 4;
+		blocks[r + 1][y + 4][r - 2] = 4;
+
+		blocks[r][y + 5][r - 1] = 4;
+		
 	}
 };

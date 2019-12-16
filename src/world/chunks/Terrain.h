@@ -4,6 +4,11 @@
 #include <iostream>
 #include <string>
 #include <algorithm>
+#include <noise/noise.h>
+#include "noiseutils.h"
+
+using namespace noise;
+
 
 class Perlin {
 public:
@@ -17,6 +22,8 @@ public:
 	float *fPerlinNoise2D = nullptr; //array for output perlin noise values
 	int nOutputWidth;
 	int nOutputHeight;
+
+
 
 	Perlin() {
 		nOutputSize = 256;
