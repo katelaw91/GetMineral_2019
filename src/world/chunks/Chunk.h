@@ -238,6 +238,10 @@ private:
 							
 							genTree(x, n);
 						}
+
+						if (rand() % 16 == x && rand() % 16 == z && blocks[x][n][z] == 1 && blocks[x - 1][n][z] != 2 && blocks[x][n][z - 1] != 2 && blocks[x + 1][n][z] != 2 && blocks[x][n][z + 1] != 2 && n < 11 && rand() % 10 == 8 && (x > 2 && x < 14)) {
+							genBigTree(x, n);
+						}
 						int temp = n - 1;
 						while (temp > 0) {
 							blocks[x][temp][z] = 2;
@@ -251,7 +255,6 @@ private:
 							{
 								blocks[x][y][z] = 1;
 							}
-
 						}
 
 	
@@ -272,9 +275,6 @@ private:
 
 			//make tree
 			if (chunkPos == glm::ivec3(0, 0, 0)) {
-
-				int r = 9;
-					
 			}
 
 				
@@ -344,6 +344,7 @@ private:
 	}
 
 	void genTree(int r, int y) {
+
 		//trunk
 		blocks[r][y][r - 1] = 3;
 		blocks[r][y + 1][r - 1] = 3;
@@ -373,5 +374,95 @@ private:
 
 		blocks[r][y + 5][r - 1] = 4;
 		
+	}
+
+	void genBigTree(int r, int y) {
+
+		//trunk
+		blocks[r][y][r - 1] = 3;
+		blocks[r][y + 1][r - 1] = 3;
+		blocks[r][y + 2][r - 1] = 3;
+		blocks[r][y + 3][r - 1] = 3;
+		blocks[r][y + 4][r - 1] = 3;
+
+		//leaf row 1
+		blocks[r][y + 3][r] = 4;
+		blocks[r][y + 3][r - 1] = 4;
+		blocks[r][y + 3][r - 2] = 4;
+		blocks[r][y + 3][r + 1] = 4;
+		blocks[r][y + 3][r - 3] = 4;
+
+
+		blocks[r - 1][y + 3][r] = 4;
+		blocks[r - 1][y + 3][r - 1] = 4;
+		blocks[r - 1][y + 3][r - 2] = 4;
+		blocks[r-1][y + 3][r  + 1] = 4;
+		blocks[r-1][y + 3][r - 3] = 4;
+
+		blocks[r - 2][y + 3][r] = 4;
+		blocks[r - 2][y + 3][r - 1] = 4;
+		blocks[r - 2][y + 3][r - 2] = 4;
+		blocks[r-2][y + 3][r + 1] = 4;
+		blocks[r-2][y + 3][r - 3] = 4;
+
+		blocks[r + 1][y + 3][r] = 4;
+		blocks[r + 1][y + 3][r - 1] = 4;
+		blocks[r + 1][y + 3][r - 2] = 4;
+		blocks[r + 1][y + 3][r + 1] = 4;
+		blocks[r + 1][y + 3][r - 3] = 4;
+
+		blocks[r + 2][y + 3][r] = 4;
+		blocks[r + 2][y + 3][r - 1] = 4;
+		blocks[r + 2][y + 3][r - 2] = 4;
+		blocks[r + 2][y + 3][r + 1] = 4;
+		blocks[r + 2][y + 3][r - 3] = 4;
+
+		//leaf row 1
+		blocks[r][y + 4][r] = 4;
+		blocks[r][y + 4][r - 1] = 4;
+		blocks[r][y + 4][r - 2] = 4;
+		blocks[r][y + 4][r + 1] = 4;
+		blocks[r][y + 4][r - 3] = 4;
+
+
+		blocks[r - 1][y + 4][r] = 4;
+		blocks[r - 1][y + 4][r - 1] = 4;
+		blocks[r - 1][y + 4][r - 2] = 4;
+		blocks[r - 1][y + 4][r + 1] = 4;
+		blocks[r - 1][y + 4][r - 3] = 4;
+
+		blocks[r - 2][y + 4][r] = 4;
+		blocks[r - 2][y + 4][r - 1] = 4;
+		blocks[r - 2][y + 4][r - 2] = 4;
+		blocks[r - 2][y + 4][r + 1] = 4;
+		blocks[r - 2][y + 4][r - 3] = 4;
+
+		blocks[r + 1][y + 4][r] = 4;
+		blocks[r + 1][y + 4][r - 1] = 4;
+		blocks[r + 1][y + 4][r - 2] = 4;
+		blocks[r + 1][y + 4][r + 1] = 4;
+		blocks[r + 1][y + 4][r - 3] = 4;
+
+		blocks[r + 2][y + 4][r] = 4;
+		blocks[r + 2][y + 4][r - 1] = 4;
+		blocks[r + 2][y + 4][r - 2] = 4;
+		blocks[r + 2][y + 4][r + 1] = 4;
+		blocks[r + 2][y + 4][r - 3] = 4;
+
+		//leaf row 3
+		blocks[r - 1][y + 5][r - 1] = 4;
+		blocks[r][y + 5][r - 1] = 4;
+		blocks[r + 1][y + 5][r - 1] = 4;
+		blocks[r - 1][y + 5][r] = 4;
+		blocks[r][y + 5][r] = 4;
+		blocks[r + 1][y + 5][r] = 4;
+		blocks[r - 1][y + 5][r - 2] = 4;
+		blocks[r][y + 5][r - 2] = 4;
+		blocks[r + 1][y + 5][r - 2] = 4;
+
+
+
+		blocks[r][y + 6][r - 1] = 4;
+
 	}
 };
